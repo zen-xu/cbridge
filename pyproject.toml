@@ -1,7 +1,7 @@
 [project]
-name = "dataclass-ctypes"
-version = "0.1.0"
-description = "Create ctypes structure like dataclass"
+name = "ctstruct"
+version = "0.1.0b0"
+description = "Creating ctypes structure like dataclass"
 readme = "README.md"
 license = "MIT"
 classifiers = [
@@ -9,28 +9,28 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = ["typing-extensions; python_version< '3.11'"]
 
 [project.urls]
-homepage = "https://github.com/zen-xu/dataclass-ctypes"
-repository = "https://github.com/zen-xu/dataclass-ctypes.git"
-issues = "https://github.com/zen-xu/dataclass-ctypes/issues"
+homepage = "https://github.com/zen-xu/ctstruct"
+repository = "https://github.com/zen-xu/ctstruct.git"
+issues = "https://github.com/zen-xu/ctstruct/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.ruff]
+extend-exclude = ["docs/*"]
 fix = true
 line-length = 88
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 extend-select = [
@@ -43,16 +43,16 @@ extend-select = [
     "PGH", # pygrep
     "RUF", # ruff checks
     "SIM", # flake8-simplify
-    "TCH", # flake8-type-checking
+    "TC",  # flake8-type-checking
     "TID", # flake8-tidy-imports
     "UP",  # pyupgrade
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["dataclass_ctypes"]
+force-single-line = true
+known-first-party = ["ctstruct"]
 lines-after-imports = 2
 lines-between-types = 1
-required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.format]
 docstring-code-format = true

@@ -1,1 +1,1 @@
-# pydantic-ctypes
+# ctstruct
