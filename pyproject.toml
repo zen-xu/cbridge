@@ -1,7 +1,9 @@
 [project]
 name = "ctstruct"
 version = "0.1.0b0"
-description = "Creating ctypes structure like dataclass"
+authors = [{ name = "ZhengYu, Xu", email = "zen-xu@outlook.com" }]
+description = "Creating ctype structure like dataclass"
+requires-python = ">=3.9"
 readme = "README.md"
 license = "MIT"
 classifiers = [
@@ -13,8 +15,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.9"
 dependencies = ["typing-extensions; python_version< '3.11'"]
 
 [project.urls]
@@ -23,8 +25,8 @@ repository = "https://github.com/zen-xu/ctstruct.git"
 issues = "https://github.com/zen-xu/ctstruct/issues"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.8,<0.9"]
+build-backend = "uv_build"
 
 [tool.ruff]
 extend-exclude = ["docs/*"]
