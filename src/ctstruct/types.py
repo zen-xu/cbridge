@@ -2,6 +2,8 @@ import ctypes
 
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import Generic
+from typing import TypeVar
 from typing import Union
 
 
@@ -71,3 +73,22 @@ else:
 
 
 CTimeT = ULong
+
+_T = TypeVar("_T")
+_Len = TypeVar("_Len")
+
+
+if TYPE_CHECKING:
+
+    class _Array(Generic[_T, _Len]): ...
+
+    Array = Union[_Array[_T, _Len], list[_T]]
+else:
+
+    class _Array:
+        def __getitem__(
+            self, type_length: tuple[type[CData], int]
+        ) -> tuple[type[CData], int]:
+            return type_length
+
+    Array = _Array()

@@ -17,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["typing-extensions; python_version< '3.11'"]
+dependencies = ["typing-extensions; python_version< '3.12'"]
 
 [project.urls]
 homepage = "https://github.com/zen-xu/ctstruct"
