@@ -37,8 +37,7 @@ class CStructMeta(_BaseStructMeta):
         def get_base_fields(cls):
             fields = []
             for base in reversed(cls.__mro__):
-                if hasattr(base, "_fields_"):
-                    fields += list(base._fields_)
+                fields += getattr(base, "_fields_", [])
             return fields
 
         for base in bases:

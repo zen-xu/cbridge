@@ -5,12 +5,12 @@ from cbridge import types
 
 
 class Data(CStruct):
-    a: types.Int32
-    b: types.Int8
+    a: types.int32
+    b: types.int8
 
 
 class Data2(Data):
-    c: types.Float
+    c: types.float
 
 
 class NestedData(CStruct):
