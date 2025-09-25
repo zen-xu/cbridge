@@ -16,15 +16,11 @@ concurrency:
 jobs:
   pytest:
     name: pytest ${{ matrix.os }} / ${{ matrix.python-version }}
-    runs-on: ${{ matrix.image }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        include:
-          - os: Ubuntu
-            image: ubuntu-22.04
-          - os: macOS
-            image: macos-latest
+        os: [ubuntu-22.04, macos-latest]
       fail-fast: false
     defaults:
       run:
