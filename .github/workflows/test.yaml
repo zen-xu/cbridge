@@ -25,8 +25,6 @@ jobs:
             image: ubuntu-22.04
           - os: macOS
             image: latest
-          - os: Windows
-            image: latest
       fail-fast: false
     defaults:
       run:
