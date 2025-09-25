@@ -9,16 +9,41 @@ class Data(CStruct):
     b: types.Int8
 
 
+class Data2(Data):
+    c: types.Float
+
+
+class NestedData(CStruct):
+    d1: Data
+    d2: Data2
+
+
 def test_construct_cstruct():
     data = Data(a=1, b=2)
     assert data.a == 1
     assert data.b == 2
+
+    data = Data(a=1, b=256)
+    assert data.b == 0
 
 
 def test_construct_from_buffer():
     buffer = array.array("B", b"\x01\x00\x00\x00\x02\x00\x00\x00")
     data = Data.from_buffer(buffer)
     assert data == Data(a=1, b=2)
+
+
+def test_construct_subclass():
+    data = Data2(a=1, b=2, c=3.0)
+    assert data.a == 1
+    assert data.b == 2
+    assert data.c == 3.0
+
+
+def test_construct_nested_cstruct():
+    data = NestedData(d1=Data(a=4, b=5), d2=Data2(a=6, b=7, c=8.0))
+    assert data.d1 == Data(a=4, b=5)
+    assert data.d2 == Data2(a=6, b=7, c=8.0)
 
 
 def test_compare_cstruct():
