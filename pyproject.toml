@@ -19,6 +19,10 @@ classifiers = [
 ]
 dependencies = ["typing-extensions; python_version< '3.12'"]
 
+[dependency-groups]
+nox = ["nox", "nox-uv"]
+test = ["pytest", "pytest-coverage"]
+
 [project.urls]
 homepage = "https://github.com/zen-xu/cbridge"
 repository = "https://github.com/zen-xu/cbridge.git"
