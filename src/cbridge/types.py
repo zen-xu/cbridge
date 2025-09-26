@@ -1,5 +1,6 @@
 import ctypes
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Generic
@@ -79,17 +80,28 @@ _Len = TypeVar("_Len")
 
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
 
-    class _Array(Generic[_T, _Len], Sequence[_T]): ...
+    class _Array(Generic[_T, _Len], ctypes.Array[_T]): ...  # type: ignore[type-var]
 
     Array = Union[_Array[_T, _Len], Sequence[_T]]
+
 else:
+    import builtins
 
-    class _Array:
-        def __getitem__(
-            self, type_length: tuple[type[CData], int]
-        ) -> tuple[type[CData], int]:
-            return type_length
+    from typing import get_args
 
-    Array = _Array()
+    class Array:
+        def __class_getitem__(cls, types: tuple[type[CData], int]):
+            ctype, length = types
+            if not isinstance(length, builtins.int):
+                length = get_args(length)[0]
+
+            return type(f"Array_{ctype.__name__}_{length}", (ctype * length, cls), {})
+
+        def __repr__(self):
+            return str(list(self))
+
+        def __eq__(self, value: object, /) -> bool:
+            if not isinstance(value, Sequence):
+                return False
+            return list(self) == list(value)

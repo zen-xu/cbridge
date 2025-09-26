@@ -5,11 +5,11 @@ import dataclasses as ds
 import sys
 import typing
 
-from collections.abc import Sequence
 from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import TypeVar
+from typing import get_origin
 
 
 if sys.version_info >= (3, 12):
@@ -20,31 +20,14 @@ else:
 if TYPE_CHECKING:
     from .types import CData
 
-    field = ds.field
-
-
 _T = TypeVar("_T")
-
-
-def new_array(ctype: type[CData], length: int) -> type[CData]:
-    class Array(ctype * length):  # type: ignore[misc]
-        def __repr__(self) -> str:
-            return str(list(self))
-
-        def __eq__(self, value: object, /) -> bool:
-            if not isinstance(value, Sequence):
-                return False
-            return list(self) == list(value)
-
-    return Array
-
 
 _BaseStructMeta: type = type(ctypes.Structure)
 
 
 @dataclass_transform()
 class CStructMeta(_BaseStructMeta):
-    def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):
+    def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
         annotations = attrs.get("__annotations__", {})
 
         fields: list[tuple[str, type[CData]]] = []
@@ -59,41 +42,51 @@ class CStructMeta(_BaseStructMeta):
             fields += get_base_fields(base)
 
         for f_name, field in annotations.items():
-            if getattr(field, "__origin__", None) is typing.ClassVar:
+            if get_origin(field) is typing.ClassVar:
                 continue
-
-            if isinstance(field, tuple):
-                # field is array
-                ctype, length = field
-                if hasattr(length, "__args__"):
-                    length = length.__args__[0]
-                fields.append((f_name, new_array(ctype, length)))
-            else:
-                fields.append((f_name, field))
+            fields.append((f_name, field))
 
         if fields:
             attrs["_fields_"] = tuple(fields)
 
-        cls = ds.dataclass()(super().__new__(meta_self, name, bases, attrs))
-        origin_init = cls.__init__
+        cls = ds.dataclass(super().__new__(meta_self, name, bases, attrs))
 
-        @wraps(origin_init)
+        @wraps(cls.__init__)
         def wrapped_init(self, *args, **kwargs):
             args = list(args)
-            for i, arg in enumerate(args):
-                if isinstance(arg, Sequence):
-                    args[i] = fields[i][1](*arg)
-            args_count = len(args)
-            for j, (k, v) in enumerate(kwargs.items()):
-                if isinstance(v, Sequence):
-                    kwargs[k] = fields[args_count + j][1](*v)
 
-            return origin_init(self, *args, **kwargs)
+            for i, arg in enumerate(args):
+                field_name = fields[i][0]
+                kwargs[field_name] = arg
+
+            # fill default values
+            for field_name, _ in fields:
+                if field_name in kwargs:
+                    continue
+
+                if field_option := attrs.get(field_name):
+                    if isinstance(field_option, ds.Field):
+                        if field_option.default is not ds.MISSING:
+                            kwargs[field_name] = field_option.default
+                        elif field_option.default_factory is not ds.MISSING:
+                            kwargs[field_name] = field_option.default_factory()
+                    else:
+                        kwargs[field_name] = field_option
+
+            field_map = dict(fields)
+            for arg_name, arg_value in kwargs.items():
+                field_type = field_map[arg_name]
+                if issubclass(field_type, ctypes.Array):
+                    kwargs[arg_name] = field_type(*arg_value)
+
+            return ctypes.Structure.__init__(self, **kwargs)
 
         cls.__init__ = wrapped_init
 
         return cls
 
+
+field = ds.field
 
 if TYPE_CHECKING:
 

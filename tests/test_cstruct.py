@@ -3,6 +3,7 @@ import array
 from typing import Literal
 
 from cbridge import CStruct
+from cbridge import field
 from cbridge import types
 
 
@@ -72,3 +73,18 @@ def test_array_cstruct():
     assert data.b == [1, 2]
     assert data.b != [2, 3]
     assert repr(data) == "ArrayData(a=1, b=[1, 2])"
+
+
+class DefaultData(CStruct):
+    a: types.int
+    b: types.int = 1
+    c: types.int = field(default=2)
+    d: types.Array[types.int, Literal[2]] = field(default_factory=lambda: [3, 4])
+
+
+def test_default_cstruct():
+    data = DefaultData(a=0)
+    assert data.a == 0
+    assert data.b == 1
+    assert data.c == 2
+    assert data.d == [3, 4]
