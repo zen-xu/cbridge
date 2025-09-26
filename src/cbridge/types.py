@@ -115,10 +115,6 @@ else:
 
     class Pointer(ctypes._Pointer):
         def __class_getitem__(cls, type):
-            class Ptr(ctypes.POINTER(type)):
-                def __repr__(self):
-                    return f"{type.__name__}_ptr"
-
             cls = ctypes.POINTER(type)
 
             def pointer_repr(self):
