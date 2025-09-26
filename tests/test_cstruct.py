@@ -1,5 +1,7 @@
 import array
 
+from typing import Literal
+
 from cbridge import CStruct
 from cbridge import types
 
@@ -57,3 +59,16 @@ def test_compare_cstruct():
 def test_repr_cstruct():
     data = Data(a=1, b=2)
     assert repr(data) == "Data(a=1, b=2)"
+
+
+class ArrayData(CStruct):
+    a: types.int
+    b: types.Array[types.int8, Literal[2]]
+
+
+def test_array_cstruct():
+    data = ArrayData(a=1, b=(1, 2))
+    assert data.a == 1
+    assert data.b == [1, 2]
+    assert data.b != [2, 3]
+    assert repr(data) == "ArrayData(a=1, b=[1, 2])"

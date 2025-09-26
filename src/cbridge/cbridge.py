@@ -5,6 +5,8 @@ import dataclasses as ds
 import sys
 import typing
 
+from collections.abc import Sequence
+from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import TypeVar
@@ -22,6 +24,19 @@ if TYPE_CHECKING:
 
 
 _T = TypeVar("_T")
+
+
+def new_array(ctype: type[CData], length: int) -> type[CData]:
+    class Array(ctype * length):  # type: ignore[misc]
+        def __repr__(self) -> str:
+            return str(list(self))
+
+        def __eq__(self, value: object, /) -> bool:
+            if not isinstance(value, Sequence):
+                return False
+            return list(self) == list(value)
+
+    return Array
 
 
 _BaseStructMeta: type = type(ctypes.Structure)
@@ -52,14 +67,32 @@ class CStructMeta(_BaseStructMeta):
                 ctype, length = field
                 if hasattr(length, "__args__"):
                     length = length.__args__[0]
-                fields.append((f_name, ctype * length))
+                fields.append((f_name, new_array(ctype, length)))
             else:
                 fields.append((f_name, field))
 
         if fields:
             attrs["_fields_"] = tuple(fields)
-        cls = super().__new__(meta_self, name, bases, attrs)
-        return ds.dataclass()(cls)
+
+        cls = ds.dataclass()(super().__new__(meta_self, name, bases, attrs))
+        origin_init = cls.__init__
+
+        @wraps(origin_init)
+        def wrapped_init(self, *args, **kwargs):
+            args = list(args)
+            for i, arg in enumerate(args):
+                if isinstance(arg, Sequence):
+                    args[i] = fields[i][1](*arg)
+            args_count = len(args)
+            for j, (k, v) in enumerate(kwargs.items()):
+                if isinstance(v, Sequence):
+                    kwargs[k] = fields[args_count + j][1](*v)
+
+            return origin_init(self, *args, **kwargs)
+
+        cls.__init__ = wrapped_init
+
+        return cls
 
 
 if TYPE_CHECKING:

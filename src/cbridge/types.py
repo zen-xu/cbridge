@@ -79,10 +79,11 @@ _Len = TypeVar("_Len")
 
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
 
-    class _Array(Generic[_T, _Len]): ...
+    class _Array(Generic[_T, _Len], Sequence[_T]): ...
 
-    Array = Union[_Array[_T, _Len], list[_T]]
+    Array = Union[_Array[_T, _Len], Sequence[_T]]
 else:
 
     class _Array:
