@@ -35,7 +35,12 @@ class CStructMeta(_BaseStructMeta):
         }
         fields = list(fields_map.items())
         if fields:
-            cls._fields_ = fields
+            if sys.version_info < (3, 13):
+                cls._fields_ = fields
+            else:
+                # rebuild class with fields
+                attrs["_fields_"] = fields
+                cls = super().__new__(meta_self, name, bases, attrs)
         cls = ds.dataclass(cls)
 
         @wraps(cls.__init__)
