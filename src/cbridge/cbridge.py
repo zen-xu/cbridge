@@ -3,13 +3,14 @@ from __future__ import annotations
 import ctypes
 import dataclasses as ds
 import sys
-import typing
 
 from functools import wraps
 from typing import TYPE_CHECKING
 from typing import Any
+from typing import ClassVar
 from typing import TypeVar
 from typing import get_origin
+from typing import get_type_hints
 
 
 if sys.version_info >= (3, 12):
@@ -17,8 +18,6 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import dataclass_transform
 
-if TYPE_CHECKING:
-    from .types import CData
 
 _T = TypeVar("_T")
 
@@ -28,28 +27,23 @@ _BaseStructMeta: type = type(ctypes.Structure)
 @dataclass_transform()
 class CStructMeta(_BaseStructMeta):
     def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
-        annotations = attrs.get("__annotations__", {})
-
-        fields: list[tuple[str, type[CData]]] = []
-
-        def get_base_fields(cls):
-            fields = []
-            for base in reversed(cls.__mro__):
-                fields += getattr(base, "_fields_", [])
-            return fields
-
-        for base in bases:
-            fields += get_base_fields(base)
-
-        for f_name, field in annotations.items():
-            if get_origin(field) is typing.ClassVar:
-                continue
-            fields.append((f_name, field))
-
+        if sys.version_info >= (3, 13):
+            attrs["_fields_"] = []
+        cls = super().__new__(meta_self, name, bases, attrs)
+        fields_map = {
+            f_name: f_type
+            for f_name, f_type in get_type_hints(cls).items()
+            if get_origin(f_type) is not ClassVar
+        }
+        fields = list(fields_map.items())
         if fields:
-            attrs["_fields_"] = tuple(fields)
+            # update fields
+            if sys.version_info >= (3, 13):
+                cls._fields_[:] = fields
+            else:
+                cls._fields_ = fields
 
-        cls = ds.dataclass(super().__new__(meta_self, name, bases, attrs))
+        cls = ds.dataclass(cls)
 
         @wraps(cls.__init__)
         def wrapped_init(self, *args, **kwargs):
@@ -73,9 +67,8 @@ class CStructMeta(_BaseStructMeta):
                     else:
                         kwargs[field_name] = field_option
 
-            field_map = dict(fields)
             for arg_name, arg_value in kwargs.items():
-                field_type = field_map[arg_name]
+                field_type = fields_map[arg_name]
                 if issubclass(field_type, ctypes.Array):
                     kwargs[arg_name] = field_type(*arg_value)
 
