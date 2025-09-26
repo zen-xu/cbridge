@@ -27,6 +27,7 @@ _BaseStructMeta: type = type(ctypes.Structure)
 @dataclass_transform()
 class CStructMeta(_BaseStructMeta):
     def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
+        attrs.setdefault("_fields_", [])
         cls = super().__new__(meta_self, name, bases, attrs)
         fields_map = {
             f_name: f_type
@@ -35,12 +36,8 @@ class CStructMeta(_BaseStructMeta):
         }
         fields = list(fields_map.items())
         if fields:
-            if sys.version_info < (3, 13):
-                cls._fields_ = fields
-            else:
-                # rebuild class with fields
-                attrs["_fields_"] = fields
-                cls = super().__new__(meta_self, name, bases, attrs)
+            # update fields
+            cls._fields_[:] = fields  # type: ignore[assignment]
         cls = ds.dataclass(cls)
 
         @wraps(cls.__init__)
