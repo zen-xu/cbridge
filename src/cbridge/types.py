@@ -2,13 +2,16 @@ import ctypes
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import Generic
+from typing import TypeVar
+from typing import overload
 
+
+_T = TypeVar("_T")
 
 if TYPE_CHECKING:
     from _ctypes import _CData as CData
     from typing import Any
-    from typing import Generic
-    from typing import TypeVar
     from typing import Union
 
     bool = Union[bool, CData]
@@ -38,15 +41,26 @@ if TYPE_CHECKING:
     ushort = Union[int, CData]
     wchar = Union[str, CData]
     void_ptr = Union[ctypes.c_void_p, Any]
-    char_ptr = Union[ctypes.c_char_p, Any]
-    wchar_ptr = Union[ctypes.c_wchar_p, Any]
 
     _Len = TypeVar("_Len")
-    _T = TypeVar("_T")
 
     class _Array(Generic[_T, _Len], ctypes.Array[_T]): ...  # type: ignore[type-var]
 
     Array = Union[_Array[_T, _Len], Sequence[_T]]
+
+    class _Pointer(ctypes._Pointer[_T]):  #  type: ignore[type-var]
+        @overload
+        def __getitem__(self, index: int) -> _T: ...
+        @overload
+        def __getitem__(self, index: slice) -> list[_T]: ...
+        def __getitem__(self, index: int | slice) -> _T | list[_T]: ...
+
+    Pointer = Union[_Pointer[_T], None]
+
+    char_ptr = Pointer[char] | bytes
+    wchar_ptr = Pointer[wchar] | str
+
+    def pointer(obj: _T) -> Pointer[_T]: ...
 else:
     CData = object
     byte = ctypes.c_byte
@@ -99,5 +113,26 @@ else:
                 return False
             return list(self) == list(value)
 
+    class Pointer(ctypes._Pointer):
+        def __class_getitem__(cls, type):
+            class Ptr(ctypes.POINTER(type)):
+                def __repr__(self):
+                    return f"{type.__name__}_ptr"
+
+            cls = ctypes.POINTER(type)
+
+            def pointer_repr(self):
+                try:
+                    _ = self.contents
+                except ValueError:
+                    return "nullptr"
+                else:
+                    return f"*{type.__name__}"
+
+            cls.__repr__ = pointer_repr
+
+            return cls
+
+    pointer = ctypes.pointer
 
 ctime_t = ulong
