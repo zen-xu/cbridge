@@ -1,6 +1,6 @@
 [project]
 name = "cbridge"
-version = "0.1.0b0"
+version = "0.1.0"
 authors = [{ name = "ZhengYu, Xu", email = "zen-xu@outlook.com" }]
 description = "Creating ctype structure like dataclass"
 requires-python = ">=3.9"
