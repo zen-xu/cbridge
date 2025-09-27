@@ -159,3 +159,13 @@ def test_pack_cstruct():
 
     assert ctypes.sizeof(DefaultPackData) == 8
     assert ctypes.sizeof(Pack1Data) == 5
+
+
+def test_empty_cstruct():
+    class Data(CStruct):
+        a: types.int
+        b: types.bool
+
+    data = Data.empty()
+    assert data.a == 0
+    assert data.b is False
