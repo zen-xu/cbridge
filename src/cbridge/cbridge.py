@@ -21,11 +21,11 @@ else:
 
 _T = TypeVar("_T")
 
-_BaseStructMeta: type = type(ctypes.Structure)
+_CStructType: type = type(ctypes.Structure)
 
 
 @dataclass_transform()
-class CStructMeta(_BaseStructMeta):
+class CStructType(_CStructType):
     def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
         if sys.version_info >= (3, 13):
             attrs["_fields_"] = []
@@ -90,4 +90,4 @@ if TYPE_CHECKING:
 
 else:
 
-    class CStruct(ctypes.Structure, metaclass=CStructMeta): ...
+    class CStruct(ctypes.Structure, metaclass=CStructType): ...

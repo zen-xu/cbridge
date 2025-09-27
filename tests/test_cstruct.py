@@ -1,7 +1,10 @@
 import array
+import sys
 
 from typing import ClassVar
 from typing import Literal
+
+import pytest
 
 from cbridge import CStruct
 from cbridge import field
@@ -102,7 +105,11 @@ def test_class_var_cstruct():
     assert str(data) == f"{ClassVarData.__qualname__}(b=1)"
 
 
-def test_pointer_cstruct():
+@pytest.mark.skipif(
+    sys.version_info >= (3, 13),
+    reason="cell structure is not supported in python3.13 or higher",
+)
+def test_cell_cstruct():
     class CellData(CStruct):
         id: types.int
         next: "types.Pointer[CellData]"
