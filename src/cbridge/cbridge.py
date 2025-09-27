@@ -14,8 +14,10 @@ from typing import get_type_hints
 
 
 if sys.version_info >= (3, 12):
+    from typing import Self
     from typing import dataclass_transform
 else:
+    from typing_extensions import Self
     from typing_extensions import dataclass_transform
 
 
@@ -97,6 +99,14 @@ if TYPE_CHECKING:
     class CStruct(ctypes.Structure):
         def __init_subclass__(cls, pack: int = 0) -> None: ...
 
+        @classmethod
+        def empty(cls) -> Self:
+            """Create an empty instance of the structure."""
+            ...
+
 else:
 
-    class CStruct(ctypes.Structure, metaclass=CStructType): ...
+    class CStruct(ctypes.Structure, metaclass=CStructType):
+        @classmethod
+        def empty(cls) -> Self:
+            return cls()
