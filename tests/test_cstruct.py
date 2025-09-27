@@ -1,4 +1,5 @@
 import array
+import ctypes
 import sys
 
 from typing import ClassVar
@@ -145,3 +146,16 @@ def test_wchar_ptr_cstruct():
     data = WCharPtrData(a="hello")
     assert data.a is not None
     assert data.a == "hello"
+
+
+def test_pack_cstruct():
+    class DefaultPackData(CStruct):
+        a: types.char
+        b: types.int
+
+    class Pack1Data(CStruct, pack=1):
+        a: types.char
+        b: types.int
+
+    assert ctypes.sizeof(DefaultPackData) == 8
+    assert ctypes.sizeof(Pack1Data) == 5
