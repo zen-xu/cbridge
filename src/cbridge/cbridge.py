@@ -26,9 +26,17 @@ _CStructType: type = type(ctypes.Structure)
 
 @dataclass_transform()
 class CStructType(_CStructType):
-    def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
+    def __new__(
+        meta_self,  # type: ignore[misc]
+        name: str,
+        bases: tuple[type, ...],
+        attrs: dict[str, Any],
+        pack: int = 0,
+        **extra,
+    ):
         if sys.version_info >= (3, 13):
             attrs["_fields_"] = []
+        attrs["_pack_"] = pack
         cls = super().__new__(meta_self, name, bases, attrs)
         fields_map = {
             f_name: f_type
@@ -86,7 +94,8 @@ field = ds.field
 if TYPE_CHECKING:
 
     @dataclass_transform(field_specifiers=(field,))
-    class CStruct(ctypes.Structure): ...
+    class CStruct(ctypes.Structure):
+        def __init_subclass__(cls, pack: int = 0) -> None: ...
 
 else:
 
