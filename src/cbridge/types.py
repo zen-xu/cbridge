@@ -2,14 +2,17 @@ import ctypes
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Any
 from typing import Generic
 from typing import TypeVar
-from typing import Union
+from typing import overload
 
+
+_T = TypeVar("_T")
 
 if TYPE_CHECKING:
     from _ctypes import _CData as CData
+    from typing import Any
+    from typing import Union
 
     bool = Union[bool, CData]
     byte = Union[bytes, CData]
@@ -38,8 +41,26 @@ if TYPE_CHECKING:
     ushort = Union[int, CData]
     wchar = Union[str, CData]
     void_ptr = Union[ctypes.c_void_p, Any]
-    char_ptr = Union[ctypes.c_char_p, Any]
-    wchar_ptr = Union[ctypes.c_wchar_p, Any]
+
+    _Len = TypeVar("_Len")
+
+    class _Array(Generic[_T, _Len], ctypes.Array[_T]): ...  # type: ignore[type-var]
+
+    Array = Union[_Array[_T, _Len], Sequence[_T]]
+
+    class _Pointer(ctypes._Pointer[_T]):  #  type: ignore[type-var]
+        @overload
+        def __getitem__(self, index: int) -> _T: ...
+        @overload
+        def __getitem__(self, index: slice) -> list[_T]: ...
+        def __getitem__(self, index: int | slice) -> _T | list[_T]: ...
+
+    Pointer = Union[_Pointer[_T], None]
+
+    char_ptr = Pointer[char] | bytes
+    wchar_ptr = Pointer[wchar] | str
+
+    def pointer(obj: _T) -> Pointer[_T]: ...
 else:
     CData = object
     byte = ctypes.c_byte
@@ -72,20 +93,6 @@ else:
     char_ptr = ctypes.c_char_p
     wchar_ptr = ctypes.c_wchar_p
 
-
-ctime_t = ulong
-
-_T = TypeVar("_T")
-_Len = TypeVar("_Len")
-
-
-if TYPE_CHECKING:
-
-    class _Array(Generic[_T, _Len], ctypes.Array[_T]): ...  # type: ignore[type-var]
-
-    Array = Union[_Array[_T, _Len], Sequence[_T]]
-
-else:
     import builtins
 
     from typing import get_args
@@ -105,3 +112,23 @@ else:
             if not isinstance(value, Sequence):
                 return False
             return list(self) == list(value)
+
+    class Pointer(ctypes._Pointer):
+        def __class_getitem__(cls, type):
+            cls = ctypes.POINTER(type)
+
+            def pointer_repr(self):
+                try:
+                    _ = self.contents
+                except ValueError:
+                    return "nullptr"
+                else:
+                    return f"*{type.__name__}"
+
+            cls.__repr__ = pointer_repr
+
+            return cls
+
+    pointer = ctypes.pointer
+
+ctime_t = ulong

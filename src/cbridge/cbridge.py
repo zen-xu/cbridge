@@ -21,18 +21,20 @@ else:
 
 _T = TypeVar("_T")
 
-_BaseStructMeta: type = type(ctypes.Structure)
+_CStructType: type = type(ctypes.Structure)
 
 
 @dataclass_transform()
-class CStructMeta(_BaseStructMeta):
+class CStructType(_CStructType):
     def __new__(meta_self, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):  # type: ignore[misc]
         if sys.version_info >= (3, 13):
             attrs["_fields_"] = []
         cls = super().__new__(meta_self, name, bases, attrs)
         fields_map = {
             f_name: f_type
-            for f_name, f_type in get_type_hints(cls).items()
+            for f_name, f_type in get_type_hints(
+                cls, localns={**locals(), name: cls}
+            ).items()
             if get_origin(f_type) is not ClassVar
         }
         fields = list(fields_map.items())
@@ -85,6 +87,7 @@ if TYPE_CHECKING:
 
     @dataclass_transform(field_specifiers=(field,))
     class CStruct(ctypes.Structure): ...
+
 else:
 
-    class CStruct(ctypes.Structure, metaclass=CStructMeta): ...
+    class CStruct(ctypes.Structure, metaclass=CStructType): ...
