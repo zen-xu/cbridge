@@ -11,12 +11,13 @@ from typing import get_type_hints
 _F = TypeVar("_F", bound=Callable)
 
 
-def cfunc(clib: str | ctypes.CDLL) -> Callable[[_F], _F]:
+def cfunc(clib: str | ctypes.CDLL, cfunc_name: str | None = None) -> Callable[[_F], _F]:
     """
     Decorator to bind a Python function signature to a C function from a shared library.
 
     Args:
         clib (str | ctypes.CDLL): The name of the C library (as a string) or a ctypes.CDLL instance.
+        cfunc_name (str | None): The name of the C function in the library. If None, uses the Python function's name.
 
     Returns:
         Callable[[_F], _F]: A decorator that replaces the Python function with the corresponding C function,
@@ -37,7 +38,8 @@ def cfunc(clib: str | ctypes.CDLL) -> Callable[[_F], _F]:
         hints = get_type_hints(func)
         restype = hints.pop("return", None)
         argtypes = list(hints.values())
-        cfunc = getattr(clib, func.__name__)
+        func_name = cfunc_name or func.__name__
+        cfunc = getattr(clib, func_name)
         cfunc.restype = restype
         cfunc.argtypes = tuple(argtypes)
         return cfunc
