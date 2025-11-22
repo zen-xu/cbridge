@@ -1,4 +1,5 @@
 # pyright: reportGeneralTypeIssues=false
+import builtins
 import ctypes
 
 from collections.abc import Sequence
@@ -47,32 +48,33 @@ if TYPE_CHECKING:
         def __abs__(self) -> Self: ...
         def __invert__(self) -> Self: ...
 
-    bool = Union[bool, CData[bool]]
-    byte = Union[bytes, CData[bytes]]
-    char = Union[bytes, CData[bytes]]
-    double = Union[float, CData[float]]
-    float = Union[float, CData[float]]
-    ubyte = Union[bytes, CData[bytes]]
-    int = Union[int, CData[int]]
-    int8 = Union[int, CData[int]]
-    int16 = Union[int, CData[int]]
-    int32 = Union[int, CData[int]]
-    int64 = Union[int, CData[int]]
-    long = Union[int, CData[int]]
-    longdouble = Union[float, CData[float]]
-    longlong = Union[float, CData[float]]
-    short = Union[int, CData[int]]
-    size_t = Union[int, CData[int]]
-    ssize_t = Union[int, CData[int]]
-    uint = Union[int, CData[int]]
-    uint8 = Union[int, CData[int]]
-    uint16 = Union[int, CData[int]]
-    uint32 = Union[int, CData[int]]
-    uint64 = Union[int, CData[int]]
-    ulong = Union[int, CData[int]]
-    ulonglong = Union[int, CData[int]]
-    ushort = Union[int, CData[int]]
-    wchar = Union[str, CData[str]]
+    _CDataType = Union[_T, CData[_T]]
+    bool = _CDataType[builtins.bool]
+    byte = _CDataType[builtins.bytes]
+    char = _CDataType[builtins.bytes]
+    double = _CDataType[builtins.float]
+    float = _CDataType[builtins.float]
+    ubyte = _CDataType[builtins.bytes]
+    int = _CDataType[builtins.int]
+    int8 = _CDataType[builtins.int]
+    int16 = _CDataType[builtins.int]
+    int32 = _CDataType[builtins.int]
+    int64 = _CDataType[builtins.int]
+    long = _CDataType[builtins.int]
+    longdouble = _CDataType[builtins.float]
+    longlong = _CDataType[builtins.float]
+    short = _CDataType[builtins.int]
+    size_t = _CDataType[builtins.int]
+    ssize_t = _CDataType[builtins.int]
+    uint = _CDataType[builtins.int]
+    uint8 = _CDataType[builtins.int]
+    uint16 = _CDataType[builtins.int]
+    uint32 = _CDataType[builtins.int]
+    uint64 = _CDataType[builtins.int]
+    ulong = _CDataType[builtins.int]
+    ulonglong = _CDataType[builtins.int]
+    ushort = _CDataType[builtins.int]
+    wchar = _CDataType[builtins.str]
     void_ptr = Union[ctypes.c_void_p, Any]
 
     _Len = TypeVar("_Len")
@@ -125,8 +127,6 @@ else:
     void_ptr = ctypes.c_void_p
     char_ptr = ctypes.c_char_p
     wchar_ptr = ctypes.c_wchar_p
-
-    import builtins
 
     from typing import get_args
 
