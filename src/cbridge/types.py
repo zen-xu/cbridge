@@ -1,3 +1,4 @@
+# pyright: reportGeneralTypeIssues=false
 import ctypes
 
 from collections.abc import Sequence
@@ -10,36 +11,68 @@ from typing import overload
 _T = TypeVar("_T")
 
 if TYPE_CHECKING:
-    from _ctypes import _CData as CData
+    from _ctypes import _CData
     from typing import Any
     from typing import Union
 
-    bool = Union[bool, CData]
-    byte = Union[bytes, CData]
-    char = Union[bytes, CData]
-    double = Union[float, CData]
-    float = Union[float, CData]
-    ubyte = Union[bytes, CData]
-    int = Union[int, CData]
-    int8 = Union[int, CData]
-    int16 = Union[int, CData]
-    int32 = Union[int, CData]
-    int64 = Union[int, CData]
-    long = Union[int, CData]
-    longdouble = Union[float, CData]
-    longlong = Union[float, CData]
-    short = Union[int, CData]
-    size_t = Union[int, CData]
-    ssize_t = Union[int, CData]
-    uint = Union[int, CData]
-    uint8 = Union[int, CData]
-    uint16 = Union[int, CData]
-    uint32 = Union[int, CData]
-    uint64 = Union[int, CData]
-    ulong = Union[int, CData]
-    ulonglong = Union[int, CData]
-    ushort = Union[int, CData]
-    wchar = Union[str, CData]
+    from typing_extensions import Self
+
+    class CData(_CData, Generic[_T]):
+        def __iadd__(self, other: _T) -> Self: ...
+        def __isub__(self, other: _T) -> Self: ...
+        def __imul__(self, other: _T) -> Self: ...
+        def __itruediv__(self, other: _T) -> Self: ...
+        def __ifloordiv__(self, other: _T) -> Self: ...
+        def __imod__(self, other: _T) -> Self: ...
+        def __ipow__(self, other: _T) -> Self: ...
+        def __ilshift__(self, other: _T) -> Self: ...
+        def __irshift__(self, other: _T) -> Self: ...
+        def __iand__(self, other: _T) -> Self: ...
+        def __ixor__(self, other: _T) -> Self: ...
+        def __ior__(self, other: _T) -> Self: ...
+        def __add__(self, other: _T) -> Self: ...
+        def __sub__(self, other: _T) -> Self: ...
+        def __mul__(self, other: _T) -> Self: ...
+        def __truediv__(self, other: _T) -> Self: ...
+        def __floordiv__(self, other: _T) -> Self: ...
+        def __mod__(self, other: _T) -> Self: ...
+        def __pow__(self, other: _T) -> Self: ...
+        def __lshift__(self, other: _T) -> Self: ...
+        def __rshift__(self, other: _T) -> Self: ...
+        def __and__(self, other: _T) -> Self: ...
+        def __xor__(self, other: _T) -> Self: ...
+        def __or__(self, other: _T) -> Self: ...
+        def __neg__(self) -> Self: ...
+        def __pos__(self) -> Self: ...
+        def __abs__(self) -> Self: ...
+        def __invert__(self) -> Self: ...
+
+    bool = Union[bool, CData[bool]]
+    byte = Union[bytes, CData[bytes]]
+    char = Union[bytes, CData[bytes]]
+    double = Union[float, CData[float]]
+    float = Union[float, CData[float]]
+    ubyte = Union[bytes, CData[bytes]]
+    int = Union[int, CData[int]]
+    int8 = Union[int, CData[int]]
+    int16 = Union[int, CData[int]]
+    int32 = Union[int, CData[int]]
+    int64 = Union[int, CData[int]]
+    long = Union[int, CData[int]]
+    longdouble = Union[float, CData[float]]
+    longlong = Union[float, CData[float]]
+    short = Union[int, CData[int]]
+    size_t = Union[int, CData[int]]
+    ssize_t = Union[int, CData[int]]
+    uint = Union[int, CData[int]]
+    uint8 = Union[int, CData[int]]
+    uint16 = Union[int, CData[int]]
+    uint32 = Union[int, CData[int]]
+    uint64 = Union[int, CData[int]]
+    ulong = Union[int, CData[int]]
+    ulonglong = Union[int, CData[int]]
+    ushort = Union[int, CData[int]]
+    wchar = Union[str, CData[str]]
     void_ptr = Union[ctypes.c_void_p, Any]
 
     _Len = TypeVar("_Len")
@@ -53,12 +86,12 @@ if TYPE_CHECKING:
         def __getitem__(self, index: int) -> _T: ...
         @overload
         def __getitem__(self, index: slice) -> list[_T]: ...
-        def __getitem__(self, index: int | slice) -> _T | list[_T]: ...
+        def __getitem__(self, index: Union[int, slice]) -> Union[_T, list[_T]]: ...
 
     Pointer = Union[_Pointer[_T], None]
 
-    char_ptr = Pointer[char] | bytes
-    wchar_ptr = Pointer[wchar] | str
+    char_ptr = Union[Pointer[char], bytes]
+    wchar_ptr = Union[Pointer[wchar], str]
 
     def pointer(obj: _T) -> Pointer[_T]: ...
 else:
