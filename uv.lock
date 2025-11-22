@@ -22,7 +22,7 @@ wheels = [
 
 [[package]]
 name = "cbridge"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
