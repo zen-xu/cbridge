@@ -5,7 +5,7 @@ from .cbridge import field
 from .cfunc import cfunc
 
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __authors__ = [
     "ZhengYu, Xu <zen-xu@outlook.com>",
 ]
