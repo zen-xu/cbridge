@@ -1,4 +1,5 @@
 # pyright: reportGeneralTypeIssues=false
+import builtins
 import ctypes
 
 from collections.abc import Sequence
@@ -47,32 +48,32 @@ if TYPE_CHECKING:
         def __abs__(self) -> Self: ...
         def __invert__(self) -> Self: ...
 
-    bool = Union[bool, CData[bool]]
-    byte = Union[bytes, CData[bytes]]
-    char = Union[bytes, CData[bytes]]
-    double = Union[float, CData[float]]
-    float = Union[float, CData[float]]
-    ubyte = Union[bytes, CData[bytes]]
-    int = Union[int, CData[int]]
-    int8 = Union[int, CData[int]]
-    int16 = Union[int, CData[int]]
-    int32 = Union[int, CData[int]]
-    int64 = Union[int, CData[int]]
-    long = Union[int, CData[int]]
-    longdouble = Union[float, CData[float]]
-    longlong = Union[float, CData[float]]
-    short = Union[int, CData[int]]
-    size_t = Union[int, CData[int]]
-    ssize_t = Union[int, CData[int]]
-    uint = Union[int, CData[int]]
-    uint8 = Union[int, CData[int]]
-    uint16 = Union[int, CData[int]]
-    uint32 = Union[int, CData[int]]
-    uint64 = Union[int, CData[int]]
-    ulong = Union[int, CData[int]]
-    ulonglong = Union[int, CData[int]]
-    ushort = Union[int, CData[int]]
-    wchar = Union[str, CData[str]]
+    bool = type("bool", (builtins.bool, CData), {})
+    byte = type("byte", (builtins.bytes, CData), {})
+    char = type("char", (builtins.bytes, CData), {})
+    double = type("double", (builtins.float, CData), {})
+    float = type("float", (builtins.float, CData), {})
+    ubyte = type("ubyte", (builtins.bytes, CData), {})
+    int = type("int", (builtins.int, CData), {})
+    int8 = type("int8", (builtins.int, CData), {})
+    int16 = type("int16", (builtins.int, CData), {})
+    int32 = type("int32", (builtins.int, CData), {})
+    int64 = type("int64", (builtins.int, CData), {})
+    long = type("long", (builtins.int, CData), {})
+    longdouble = type("longdouble", (builtins.float, CData), {})
+    longlong = type("longlong", (builtins.float, CData), {})
+    short = type("short", (builtins.int, CData), {})
+    size_t = type("size_t", (builtins.int, CData), {})
+    ssize_t = type("ssize_t", (builtins.int, CData), {})
+    uint = type("uint", (builtins.int, CData), {})
+    uint8 = type("uint8", (builtins.int, CData), {})
+    uint16 = type("uint16", (builtins.int, CData), {})
+    uint32 = type("uint32", (builtins.int, CData), {})
+    uint64 = type("uint64", (builtins.int, CData), {})
+    ulong = type("ulong", (builtins.int, CData), {})
+    ulonglong = type("ulonglong", (builtins.int, CData), {})
+    ushort = type("ushort", (builtins.int, CData), {})
+    wchar = type("wchar", (builtins.str, CData), {})
     void_ptr = Union[ctypes.c_void_p, Any]
 
     _Len = TypeVar("_Len")
@@ -83,10 +84,12 @@ if TYPE_CHECKING:
 
     class _Pointer(ctypes._Pointer[_T]):  #  type: ignore[type-var]
         @overload
-        def __getitem__(self, index: int) -> _T: ...
+        def __getitem__(self, index: builtins.int) -> _T: ...
         @overload
         def __getitem__(self, index: slice) -> list[_T]: ...
-        def __getitem__(self, index: Union[int, slice]) -> Union[_T, list[_T]]: ...
+        def __getitem__(
+            self, index: Union[builtins.int, slice]
+        ) -> Union[_T, list[_T]]: ...
 
     Pointer = Union[_Pointer[_T], None]
 
@@ -125,8 +128,6 @@ else:
     void_ptr = ctypes.c_void_p
     char_ptr = ctypes.c_char_p
     wchar_ptr = ctypes.c_wchar_p
-
-    import builtins
 
     from typing import get_args
 
