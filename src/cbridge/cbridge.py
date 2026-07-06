@@ -36,10 +36,24 @@ class CStructType(_CStructType):
         pack: int = 0,
         **extra,
     ):
-        if sys.version_info >= (3, 13):
-            attrs["_fields_"] = []
-        attrs["_pack_"] = pack
-        cls = super().__new__(meta_self, name, bases, attrs)
+        if pack:
+            attrs["_pack_"] = pack
+            # Python 3.14+ only allows _pack_ with the MSVC-compatible layout
+            attrs["_layout_"] = "ms"
+        return super().__new__(meta_self, name, bases, attrs)
+
+    # Since Python 3.13, ctypes initializes structure storage info in tp_init
+    # instead of tp_new, so field resolution (which may create pointers to the
+    # class itself for forward declarations) must happen after super().__init__
+    def __init__(
+        cls,  # noqa: N805
+        name: str,
+        bases: tuple[type, ...],
+        attrs: dict[str, Any],
+        pack: int = 0,
+        **extra,
+    ):
+        super().__init__(name, bases, attrs)
         fields_map = {
             f_name: f_type
             for f_name, f_type in get_type_hints(
@@ -50,14 +64,11 @@ class CStructType(_CStructType):
         fields = list(fields_map.items())
         if fields:
             # update fields
-            if sys.version_info >= (3, 13):
-                cls._fields_[:] = fields
-            else:
-                cls._fields_ = fields
+            cls._fields_ = fields
 
-        cls = ds.dataclass(cls)
+        ds.dataclass(cls)
 
-        @wraps(cls.__init__)
+        @wraps(cls.__init__)  # type: ignore[misc]
         def wrapped_init(self, *args, **kwargs):
             args = list(args)
 
@@ -86,9 +97,7 @@ class CStructType(_CStructType):
 
             return ctypes.Structure.__init__(self, **kwargs)
 
-        cls.__init__ = wrapped_init
-
-        return cls
+        cls.__init__ = wrapped_init  # type: ignore[misc]
 
 
 field = ds.field
