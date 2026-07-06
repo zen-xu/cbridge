@@ -154,9 +154,6 @@ print(Config(name=b"test"))  # Config(name=b'test', timeout=30, flags=[0, 1])
 
 ### Pointer Operations
 
-> [!WARNING]
-> Python 3.13 and above are currently not supported forward declarations
-
 ```python
 from cbridge import CStruct
 from cbridge import types
